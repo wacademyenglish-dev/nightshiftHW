@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLF LABS | Homework App</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { bgDark: '#1E1B18', panelDark: '#2A2622', panelHover: '#3A352F', textLight: '#E8E3D9', textMuted: '#A89F91', accentAmber: '#C4A47C', accentRust: '#8C5E58', accentGreen: '#6B705C', dangerRed: '#9B4848' },
+                    fontFamily: { heading: ['Outfit', 'sans-serif'], body: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: #12100E; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif; }
+        #phone-frame { width: 375px; height: 812px; background: #1E1B18; border-radius: 40px; border: 12px solid #000; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 30px; background: #000; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; z-index: 50; }
+        .fade-in { animation: fadeIn 0.3s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+        /* Confetti */
+        .confetti { position: absolute; width: 8px; height: 8px; background-color: #C4A47C; opacity: 0; }
+        @keyframes fall { 0% { opacity: 1; transform: translateY(-50px) rotate(0deg); } 100% { opacity: 0; transform: translateY(800px) rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="phone-frame">
+        <div class="notch"></div>
+        
+        <!-- UI Header -->
+        <header class="pt-12 pb-4 px-6 bg-panelDark border-b border-panelHover flex justify-between items-center z-40 relative">
+            <div class="font-heading font-bold text-accentAmber text-sm">WOLF<span class="text-textLight">HW</span></div>
+            <div class="text-xs font-mono text-textMuted" id="q-counter">Q 1/15</div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="h-1 bg-bgDark w-full">
+            <div id="progress-bar" class="h-full bg-accentAmber transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Main Content -->
+        <main id="app-content" class="p-6 h-[calc(100%-100px)] overflow-y-auto relative text-textLight">
+            <!-- Start Screen -->
+            <div id="screen-start" class="flex flex-col items-center justify-center h-full text-center fade-in">
+                <i class="fa-solid fa-moon text-6xl text-accentAmber mb-6"></i>
+                <h1 class="font-heading text-3xl font-bold mb-2">The Night Shift</h1>
+                <p class="text-textMuted mb-10 text-sm">Homework Module A2<br>Modals of Obligation & Advice</p>
+                <button onclick="startQuiz()" class="bg-accentAmber text-bgDark w-full py-4 rounded-xl font-bold font-heading text-lg shadow-lg hover:opacity-90">START QUIZ</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="screen-quiz" class="hidden flex-col h-full fade-in">
+                <div class="flex-1 flex flex-col justify-center">
+                    <p id="question-text" class="font-heading text-2xl font-bold mb-8 text-center leading-snug"></p>
+                    <div id="options-container" class="flex flex-col gap-3">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div id="screen-result" class="hidden flex-col items-center justify-center h-full text-center fade-in z-10 relative">
+                <div id="rank-icon" class="text-7xl mb-4 text-accentAmber"></div>
+                <h2 class="font-heading text-4xl font-bold mb-2 text-textLight" id="final-score"></h2>
+                <p class="text-textMuted font-mono mb-8" id="rank-title"></p>
+                <div class="bg-panelDark p-4 rounded-xl w-full border border-panelHover mb-8">
+                    <p class="text-sm text-textLight">Remember:<br><span class="text-accentRust">Mustn't</span> = Prohibited<br><span class="text-accentGreen">Don't have to</span> = Your choice</p>
+                </div>
+                <button onclick="location.reload()" class="bg-panelHover border border-accentAmber text-accentAmber w-full py-4 rounded-xl font-bold font-heading">TRY AGAIN</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "You ___ wear a uniform to school. It's a strict rule.", o: ["should", "have to", "don't have to"], a: 1 },
+            { q: "You look very tired. You ___ go to bed early.", o: ["mustn't", "should", "don't have to"], a: 1 },
+            { q: "Tomorrow is Sunday! I ___ wake up early.", o: ["mustn't", "shouldn't", "don't have to"], a: 2 },
+            { q: "This area is restricted. You ___ enter without a badge.", o: ["mustn't", "don't have to", "shouldn't"], a: 0 },
+            { q: "He has an exam tomorrow. He ___ study tonight.", o: ["should", "mustn't", "doesn't have to"], a: 0 },
+            { q: "You ___ bring water, we have plenty here. (It's not necessary)", o: ["mustn't", "don't have to", "should"], a: 1 },
+            { q: "I ___ finish this report today. The boss needs it.", o: ["must", "should", "don't have to"], a: 0 },
+            { q: "It's raining outside. You ___ take an umbrella.", o: ["mustn't", "should", "have to"], a: 1 },
+            { q: "You ___ smoke in the hospital. It's illegal.", o: ["don't have to", "shouldn't", "mustn't"], a: 2 },
+            { q: "We ___ buy tickets now, the movie is free today!", o: ["don't have to", "mustn't", "should"], a: 0 },
+            { q: "You ___ eat so much fast food. It's bad for you.", o: ["mustn't", "shouldn't", "don't have to"], a: 1 },
+            { q: "Do we ___ wear a tie for the meeting?", o: ["should", "must", "have to"], a: 2 },
+            { q: "You ___ touch that wire! It's dangerous!", o: ["mustn't", "don't have to", "shouldn't"], a: 0 },
+            { q: "She ___ work on weekends. Her schedule is Mon-Fri.", o: ["mustn't", "doesn't have to", "shouldn't"], a: 1 },
+            { q: "If you want to pass A2, you ___ practice every day.", o: ["mustn't", "don't have to", "should"], a: 2 }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function startQuiz() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            document.getElementById('screen-quiz').style.display = 'flex';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('q-counter').innerText = `Q ${currentQ + 1}/${questions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentQ) / questions.length) * 100}%`;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full bg-panelDark border border-panelHover text-left p-4 rounded-xl text-lg hover:border-accentAmber transition-colors';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(idx, q.a, btn, optsContainer);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selected, correct, btn, container) {
+            Array.from(container.children).forEach(b => b.disabled = true);
+            
+            if (selected === correct) {
+                btn.classList.add('bg-accentGreen', 'border-accentGreen', 'text-bgDark');
+                score++;
+            } else {
+                btn.classList.add('bg-dangerRed', 'border-dangerRed');
+                container.children[correct].classList.add('border-accentGreen', 'text-accentGreen');
+            }
+
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    document.getElementById('screen-quiz').classList.remove('fade-in');
+                    void document.getElementById('screen-quiz').offsetWidth; // restart animation
+                    document.getElementById('screen-quiz').classList.add('fade-in');
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1200);
+        }
+
+        function showResults() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+            document.getElementById('screen-result').style.display = 'flex';
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let rank, icon;
+            if (score === 15) { rank = 'NIGHT SHIFT COMMANDER'; icon = '<i class="fa-solid fa-crown text-accentAmber"></i>'; spawnConfetti(); }
+            else if (score >= 10) { rank = 'SENIOR GUARD'; icon = '<i class="fa-solid fa-shield-halved text-textLight"></i>'; }
+            else { rank = 'ROOKIE GUARD'; icon = '<i class="fa-solid fa-user-shield text-accentRust"></i>'; }
+            
+            document.getElementById('rank-title').innerText = rank;
+            document.getElementById('rank-icon').innerHTML = icon;
+        }
+
+        function spawnConfetti() {
+            const container = document.getElementById('screen-result');
+            for(let i=0; i<30; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + '%';
+                conf.style.animation = `fall ${Math.random() * 2 + 1}s linear forwards`;
+                conf.style.animationDelay = Math.random() * 2 + 's';
+                conf.style.backgroundColor = ['#C4A47C', '#8C5E58', '#E8E3D9'][Math.floor(Math.random()*3)];
+                container.appendChild(conf);
+            }
+        }
+    </script>
+</body>
+</html>
